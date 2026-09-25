@@ -9,13 +9,29 @@ export default function Calculator() {
   const [waitingForSecond, setWaitingForSecond] = useState(false);
 
   const inputDigit = (digit) => {
-    if (waitingForSecond) {
-      setDisplay(String(digit));
-      setWaitingForSecond(false);
-    } else {
-      setDisplay(display === "0" ? String(digit) : display + digit);
+  if (waitingForSecond) {
+    const newDisplay = String(digit);
+
+    setDisplay(newDisplay);
+    setWaitingForSecond(false);
+
+    if (firstValue !== null && operator !== null) {
+      setExpression(`${firstValue} ${operator} ${newDisplay}`);
     }
-  };
+
+  } else {
+    const newDisplay =
+      display === "0"
+        ? String(digit)
+        : display + digit;
+
+    setDisplay(newDisplay);
+
+    if (firstValue !== null && operator !== null) {
+      setExpression(`${firstValue} ${operator} ${newDisplay}`);
+    }
+  }
+};
 
   const inputDot = () => {
     if (!display.includes(".")) {
@@ -27,7 +43,6 @@ export default function Calculator() {
     setDisplay("0");
     setFirstValue(null);
     setExpression(null);
-    setSecondvalue(null);
     setOperator(null);
     setWaitingForSecond(false);
   };
@@ -105,6 +120,7 @@ export default function Calculator() {
       <View style={styles.displayWrap}>
         <Text style={styles.expressionText} numberOfLines={1}> {expression} </Text>
         <Text style={[styles.displayText, { fontSize: getFontSize(display) }]} numberOfLines={1} > {display} </Text>
+
       </View>
 
       <View style={styles.pad}>
