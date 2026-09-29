@@ -6,23 +6,24 @@ import {
     Pressable,
     StyleSheet,
 } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
 
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
 export default function Todo() {
     const [task, setTask] = useState("");
-    const [todos, setTodos] = useState([]);
+    const [todos, setTodos] = useState([{}]);
 
     const loadTodos = async () => {
-       try {
-         const savedTodos = await AsyncStorage.getItem("todos");
- 
-         if (savedTodos !== null) {
-             setTodos(JSON.parse(savedTodos))
-         }
-       } catch (error) {
+        try {
+            const savedTodos = await AsyncStorage.getItem("todos");
+
+            if (savedTodos !== null) {
+                setTodos(JSON.parse(savedTodos))
+            }
+        } catch (error) {
             console.error("Failed to loadTasks", error)
-       }
+        }
     }
 
     useEffect(() => {
@@ -38,9 +39,20 @@ export default function Todo() {
     const addTodo = () => {
         if (task.trim() === "") return;
 
-        setTodos([...todos, task.trim()]);
+        const todo = {
+            id: Date.now(),
+            task: task.trim(),
+            completed: false,
+        }
+        setTodos([...todos, todo]);
         setTask("");
     };
+
+    const toggleTodo = (id) => {
+        todos.map((todo) => {
+            todo.id === id ? { ...todo, completed: !todo.completed } : todo
+        })
+    }
 
     return (
         <View style={styles.container}>
@@ -61,7 +73,10 @@ export default function Todo() {
 
             {todos.map((todo, index) => (
                 <View style={styles.todo} key={index}>
-                    <Text style={styles.todoText}>{todo}</Text>
+                    <Text style={styles.todoText}>{todo.task}</Text>
+                    <Pressable style={styles.addButton} onPress={toggleTodo}>
+                        <Text style={styles.addText}> {todo.completed ? <Ionicons name="checkmark-done" /> : <Ionicons name="checkmark" />}</Text>
+                    </Pressable>
                 </View>
             ))}
         </View>
