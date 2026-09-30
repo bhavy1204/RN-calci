@@ -12,29 +12,31 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 
 export default function Todo() {
     const [task, setTask] = useState("");
-    const [todos, setTodos] = useState([{}]);
+    const [priority, setPriority] = useState("medium");
+    const [dueDate, setDueDate] = useState("");
+    const [todos, setTodos] = useState([]);
 
+    // Load todos when app starts
     const loadTodos = async () => {
         try {
             const savedTodos = await AsyncStorage.getItem("todos");
 
             if (savedTodos !== null) {
-                setTodos(JSON.parse(savedTodos))
+                setTodos(JSON.parse(savedTodos));
             }
         } catch (error) {
-            console.error("Failed to loadTasks", error)
+            console.error("Failed to load tasks", error);
         }
-    }
+    };
 
     useEffect(() => {
         loadTodos();
-    }, [])
+    }, []);
 
+    // Save whenever todos change
     useEffect(() => {
-        AsyncStorage.setItem("todos", JSON.stringify(todos))
-    }, [todos])
-
-
+        AsyncStorage.setItem("todos", JSON.stringify(todos));
+    }, [todos]);
 
     const addTodo = () => {
         if (task.trim() === "") return;
@@ -42,41 +44,148 @@ export default function Todo() {
         const todo = {
             id: Date.now(),
             task: task.trim(),
+            priority: priority,
+            dueDate: dueDate.trim(),
             completed: false,
-        }
+        };
+
         setTodos([...todos, todo]);
+
+        // Clear inputs
         setTask("");
+        setPriority("medium");
+        setDueDate("");
     };
 
     const toggleTodo = (id) => {
-        todos.map((todo) => {
-            todo.id === id ? { ...todo, completed: !todo.completed } : todo
-        })
-    }
+        setTodos(
+            todos.map((todo) =>
+                todo.id === id
+                    ? { ...todo, completed: !todo.completed }
+                    : todo
+            )
+        );
+    };
+
+    const deleteTodo = (id) => {
+        setTodos(todos.filter((todo) => todo.id !== id));
+    };
 
     return (
         <View style={styles.container}>
             <Text style={styles.title}>Your Daily Tasks</Text>
 
-            <View style={styles.inputRow}>
-                <TextInput
-                    style={styles.input}
-                    placeholder="Enter task"
-                    value={task}
-                    onChangeText={setTask}
-                />
+            {/* Task input */}
+            <TextInput
+                style={styles.input}
+                placeholder="Enter task"
+                value={task}
+                onChangeText={setTask}
+            />
 
-                <Pressable style={styles.addButton} onPress={addTodo}>
-                    <Text style={styles.addText}>Add</Text>
+            {/* Priority */}
+            <Text style={styles.label}>Priority</Text>
+
+            <View style={styles.priorityRow}>
+                <Pressable
+                    style={[
+                        styles.priorityButton,
+                        priority === "low" && styles.selectedPriority,
+                    ]}
+                    onPress={() => setPriority("low")}
+                >
+                    <Text>Low</Text>
+                </Pressable>
+
+                <Pressable
+                    style={[
+                        styles.priorityButton,
+                        priority === "medium" && styles.selectedPriority,
+                    ]}
+                    onPress={() => setPriority("medium")}
+                >
+                    <Text>Medium</Text>
+                </Pressable>
+
+                <Pressable
+                    style={[
+                        styles.priorityButton,
+                        priority === "high" && styles.selectedPriority,
+                    ]}
+                    onPress={() => setPriority("high")}
+                >
+                    <Text>High</Text>
                 </Pressable>
             </View>
 
-            {todos.map((todo, index) => (
-                <View style={styles.todo} key={index}>
-                    <Text style={styles.todoText}>{todo.task}</Text>
-                    <Pressable style={styles.addButton} onPress={toggleTodo}>
-                        <Text style={styles.addText}> {todo.completed ? <Ionicons name="checkmark-done" /> : <Ionicons name="checkmark" />}</Text>
-                    </Pressable>
+            {/* Due date */}
+            <Text style={styles.label}>Due Date</Text>
+
+            <TextInput
+                style={styles.input}
+                placeholder="YYYY-MM-DD"
+                value={dueDate}
+                onChangeText={setDueDate}
+            />
+
+            {/* Add button */}
+            <Pressable style={styles.addButton} onPress={addTodo}>
+                <Text style={styles.addText}>Add Task</Text>
+            </Pressable>
+
+            {/* Todo list */}
+            {todos.map((todo) => (
+                <View style={styles.todo} key={todo.id}>
+                    <View style={styles.todoInfo}>
+                        <Text
+                            style={[
+                                styles.todoText,
+                                todo.completed && styles.completedText,
+                            ]}
+                        >
+                            {todo.task}
+                        </Text>
+
+                        <Text style={styles.details}>
+                            Priority: {todo.priority}
+                        </Text>
+
+                        {todo.dueDate !== "" && (
+                            <Text style={styles.details}>
+                                Due: {todo.dueDate}
+                            </Text>
+                        )}
+                    </View>
+
+                    <View style={styles.actions}>
+                        {/* Complete */}
+                        <Pressable
+                            style={styles.iconButton}
+                            onPress={() => toggleTodo(todo.id)}
+                        >
+                            <Ionicons
+                                name={
+                                    todo.completed
+                                        ? "checkmark-done"
+                                        : "checkmark"
+                                }
+                                size={22}
+                                color="white"
+                            />
+                        </Pressable>
+
+                        {/* Delete */}
+                        <Pressable
+                            style={styles.deleteButton}
+                            onPress={() => deleteTodo(todo.id)}
+                        >
+                            <Ionicons
+                                name="trash-outline"
+                                size={22}
+                                color="white"
+                            />
+                        </Pressable>
+                    </View>
                 </View>
             ))}
         </View>
@@ -96,13 +205,14 @@ const styles = StyleSheet.create({
         marginBottom: 20,
     },
 
-    inputRow: {
-        flexDirection: "row",
-        gap: 10,
+    label: {
+        fontSize: 16,
+        fontWeight: "600",
+        marginTop: 15,
+        marginBottom: 8,
     },
 
     input: {
-        flex: 1,
         borderWidth: 1,
         borderColor: "#ccc",
         borderRadius: 10,
@@ -110,16 +220,37 @@ const styles = StyleSheet.create({
         height: 50,
     },
 
+    priorityRow: {
+        flexDirection: "row",
+        gap: 10,
+    },
+
+    priorityButton: {
+        paddingVertical: 10,
+        paddingHorizontal: 18,
+        borderWidth: 1,
+        borderColor: "#ccc",
+        borderRadius: 10,
+    },
+
+    selectedPriority: {
+        backgroundColor: "#ddd",
+        borderColor: "black",
+    },
+
     addButton: {
         backgroundColor: "black",
-        paddingHorizontal: 20,
+        height: 50,
         borderRadius: 10,
         justifyContent: "center",
+        alignItems: "center",
+        marginTop: 15,
     },
 
     addText: {
         color: "white",
         fontWeight: "bold",
+        fontSize: 16,
     },
 
     todo: {
@@ -127,10 +258,53 @@ const styles = StyleSheet.create({
         marginTop: 12,
         backgroundColor: "#eee",
         borderRadius: 10,
+        flexDirection: "row",
+        justifyContent: "space-between",
+        alignItems: "center",
+    },
+
+    todoInfo: {
+        flex: 1,
     },
 
     todoText: {
         fontSize: 18,
+        fontWeight: "600",
+    },
+
+    completedText: {
+        textDecorationLine: "line-through",
+        opacity: 0.5,
+    },
+
+    details: {
+        marginTop: 4,
+        fontSize: 14,
+        color: "#666",
+    },
+
+    actions: {
+        flexDirection: "row",
+        gap: 8,
+        marginLeft: 10,
+    },
+
+    iconButton: {
+        backgroundColor: "black",
+        width: 40,
+        height: 40,
+        borderRadius: 8,
+        justifyContent: "center",
+        alignItems: "center",
+    },
+
+    deleteButton: {
+        backgroundColor: "#d32f2f",
+        width: 40,
+        height: 40,
+        borderRadius: 8,
+        justifyContent: "center",
+        alignItems: "center",
     },
 });
 
