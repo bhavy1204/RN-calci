@@ -18,6 +18,7 @@ export default function Todo() {
     const [selectedDate, setSelectedDate] = useState(null);
     const [todos, setTodos] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [showAddtask, setShowAddTask] = useState(false);
 
     // Load todos when app starts
     const loadTodos = async () => {
@@ -46,6 +47,7 @@ export default function Todo() {
     }, [todos, loading]);
 
     const addTodo = () => {
+        setShowAddTask(true);
         if (task.trim() === "") return;
 
         const todo = {
@@ -61,8 +63,9 @@ export default function Todo() {
         setTodos((prevTodos) => [...prevTodos, todo]);
 
         setTask("");
-        setPriority("medium");
+        setPriority("low");
         setSelectedDate(null);
+        setShowAddTask(false);
     };
 
     const toggleTodo = (id) => {
@@ -83,117 +86,122 @@ export default function Todo() {
         <View style={styles.container}>
             <Text style={styles.title}>Your Daily Tasks</Text>
 
-            {/* Task input */}
-            <TextInput
-                style={styles.input}
-                placeholder="Enter task"
-                placeholderTextColor="#999"
-                value={task}
-                onChangeText={setTask}
-            />
+            {showAddtask &&
+                <>
 
-            {/* Priority */}
-            <Text style={styles.label}>Priority</Text>
-
-            <View style={styles.priorityRow}>
-                <Pressable
-                    style={[
-                        styles.priorityButton,
-                        priority === "low" && styles.lowPriority,
-                    ]}
-                    onPress={() => setPriority("low")}
-                >
-                    <Text
-                        style={[
-                            styles.priorityText,
-                            priority === "low" && styles.selectedPriorityText,
-                        ]}
-                    >
-                        Low
-                    </Text>
-                </Pressable>
-
-                <Pressable
-                    style={[
-                        styles.priorityButton,
-                        priority === "medium" && styles.mediumPriority,
-                    ]}
-                    onPress={() => setPriority("medium")}
-                >
-                    <Text
-                        style={[
-                            styles.priorityText,
-                            priority === "medium" &&
-                            styles.selectedPriorityText,
-                        ]}
-                    >
-                        Medium
-                    </Text>
-                </Pressable>
-
-                <Pressable
-                    style={[
-                        styles.priorityButton,
-                        priority === "high" && styles.highPriority,
-                    ]}
-                    onPress={() => setPriority("high")}
-                >
-                    <Text
-                        style={[
-                            styles.priorityText,
-                            priority === "high" && styles.selectedPriorityText,
-                        ]}
-                    >
-                        High
-                    </Text>
-                </Pressable>
-            </View>
-
-            {/* Due date */}
-            <Text style={styles.label}>Due Date</Text>
-
-            <Pressable
-                style={styles.input}
-                onPress={() => setShowPicker(true)}
-            >
-                <View style={styles.dateInput}>
-                    <Text
-                        style={[
-                            styles.dateText,
-                            !selectedDate && styles.placeholderText,
-                        ]}
-                    >
-                        {selectedDate
-                            ? selectedDate.toLocaleDateString()
-                            : "Select due date"}
-                    </Text>
-
-                    <Ionicons
-                        name="calendar-outline"
-                        size={20}
-                        color="#71717A"
+                    {/* Task input */}
+                    <TextInput
+                        style={styles.input}
+                        placeholder="Enter task"
+                        placeholderTextColor="#999"
+                        value={task}
+                        onChangeText={setTask}
                     />
-                </View>
-            </Pressable>
 
-            {picker && (
-                <DateTimePicker
-                    value={selectedDate || new Date()}
-                    mode="date"
-                    display="default"
-                    onChange={(event, date) => {
-                        setShowPicker(false);
+                    {/* Priority */}
+                    <Text style={styles.label}>Priority</Text>
 
-                        if (date) {
-                            setSelectedDate(date);
-                        }
-                    }}
-                />
-            )}
+                    <View style={styles.priorityRow}>
+                        <Pressable
+                            style={[
+                                styles.priorityButton,
+                                priority === "low" && styles.lowPriority,
+                            ]}
+                            onPress={() => setPriority("low")}
+                        >
+                            <Text
+                                style={[
+                                    styles.priorityText,
+                                    priority === "low" && styles.selectedPriorityText,
+                                ]}
+                            >
+                                Low
+                            </Text>
+                        </Pressable>
 
+                        <Pressable
+                            style={[
+                                styles.priorityButton,
+                                priority === "medium" && styles.mediumPriority,
+                            ]}
+                            onPress={() => setPriority("medium")}
+                        >
+                            <Text
+                                style={[
+                                    styles.priorityText,
+                                    priority === "medium" &&
+                                    styles.selectedPriorityText,
+                                ]}
+                            >
+                                Medium
+                            </Text>
+                        </Pressable>
+
+                        <Pressable
+                            style={[
+                                styles.priorityButton,
+                                priority === "high" && styles.highPriority,
+                            ]}
+                            onPress={() => setPriority("high")}
+                        >
+                            <Text
+                                style={[
+                                    styles.priorityText,
+                                    priority === "high" && styles.selectedPriorityText,
+                                ]}
+                            >
+                                High
+                            </Text>
+                        </Pressable>
+                    </View>
+
+                    {/* Due date */}
+                    <Text style={styles.label}>Due Date</Text>
+
+                    <Pressable
+                        style={styles.input}
+                        onPress={() => setShowPicker(true)}
+                    >
+                        <View style={styles.dateInput}>
+                            <Text
+                                style={[
+                                    styles.dateText,
+                                    !selectedDate && styles.placeholderText,
+                                ]}
+                            >
+                                {selectedDate
+                                    ? selectedDate.toLocaleDateString()
+                                    : "Select due date"}
+                            </Text>
+
+                            <Ionicons
+                                name="calendar-outline"
+                                size={20}
+                                color="#71717A"
+                            />
+                        </View>
+                    </Pressable>
+
+                    {picker && (
+                        <DateTimePicker
+                            value={selectedDate || new Date()}
+                            mode="date"
+                            display="default"
+                            onChange={(event, date) => {
+                                setShowPicker(false);
+
+                                if (date) {
+                                    setSelectedDate(date);
+                                }
+                            }}
+                        />
+                    )}
+                </>
+
+            }
             {/* Add button */}
             <Pressable style={styles.addButton} onPress={addTodo}>
-                <Ionicons name="add" size={20} color="white" />
+                {/* <Ionicons name="add" size={20} color="white" /> */}
 
                 <Text style={styles.addText}>Add Task</Text>
             </Pressable>
