@@ -9,29 +9,29 @@ export default function Calculator() {
   const [waitingForSecond, setWaitingForSecond] = useState(false);
 
   const inputDigit = (digit) => {
-  if (waitingForSecond) {
-    const newDisplay = String(digit);
+    if (waitingForSecond) {
+      const newDisplay = String(digit);
 
-    setDisplay(newDisplay);
-    setWaitingForSecond(false);
+      setDisplay(newDisplay);
+      setWaitingForSecond(false);
 
-    if (firstValue !== null && operator !== null) {
-      setExpression(`${firstValue} ${operator} ${newDisplay}`);
+      if (firstValue !== null && operator !== null) {
+        setExpression(`${firstValue} ${operator} ${newDisplay}`);
+      }
+
+    } else {
+      const newDisplay =
+        display === "0"
+          ? String(digit)
+          : display + digit;
+
+      setDisplay(newDisplay);
+
+      if (firstValue !== null && operator !== null) {
+        setExpression(`${firstValue} ${operator} ${newDisplay}`);
+      }
     }
-
-  } else {
-    const newDisplay =
-      display === "0"
-        ? String(digit)
-        : display + digit;
-
-    setDisplay(newDisplay);
-
-    if (firstValue !== null && operator !== null) {
-      setExpression(`${firstValue} ${operator} ${newDisplay}`);
-    }
-  }
-};
+  };
 
   const inputDot = () => {
     if (!display.includes(".")) {
@@ -116,92 +116,56 @@ export default function Calculator() {
   };
 
   return (
-    <View style={styles.container}>
-      <View style={styles.displayWrap}>
-        <Text style={styles.expressionText} numberOfLines={1}> {expression} </Text>
-        <Text style={[styles.displayText, { fontSize: getFontSize(display) }]} numberOfLines={1} > {display} </Text>
+ <View className="flex-1 justify-end bg-black">
 
-      </View>
+  {/* Display */}
+  <View className="min-h-[120px] items-end justify-end px-4">
+    <Text
+      className="mb-1 text-xl text-[#888]"
+      numberOfLines={1}
+    >
+      {expression}
+    </Text>
 
-      <View style={styles.pad}>
-        {buttons.map((row, i) => (
-          <View style={styles.row} key={i}>
-            {row.map((label) => (
-              <Pressable
-                key={label}
-                onPress={() => onPress(label)}
-                style={[
-                  styles.button,
-                  label === "0" && styles.zeroButton,
-                  ["÷", "*", "-", "+", "="].includes(label) && styles.operatorButton,
-                ]}
-              >
-                <Text style={styles.buttonText}>{label}</Text>
-              </Pressable>
-            ))}
-          </View>
+    <Text
+      className="font-light text-[58px] text-white"
+      style={{ fontSize: getFontSize(display) }}
+      numberOfLines={1}
+    >
+      {display}
+    </Text>
+  </View>
+
+  {/* Buttons */}
+  <View className="px-3 pb-1">
+    {buttons.map((row, i) => (
+      <View className="mb-2 flex-row" key={i}>
+        {row.map((label) => (
+          <Pressable
+            key={label}
+            onPress={() => onPress(label)}
+            className={`mx-1 items-center justify-center rounded-full bg-[#333] ${
+              label === "0"
+                ? "h-[70px] flex-[2.15] mt-1 items-start justify-center rounded-[30px] pl-6"
+                : "aspect-square flex-1"
+            } ${
+              ["÷", "*", "-", "+", "="].includes(label)
+                ? "bg-[#ff9f0a]"
+                : ""
+            }`}
+          >
+            <Text className="text-[24px] text-white">
+              {label}
+            </Text>
+          </Pressable>
         ))}
       </View>
-    </View>
+    ))}
+  </View>
+
+</View>
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#000",
-    justifyContent: "flex-end"
-  },
 
-  displayWrap: {
-    padding: 24,
-    alignItems: "flex-end",
-    minHeight: 140,
-    justifyContent: "flex-end",
-  },
-
-  expressionText: {
-    color: "#888",
-    fontSize: 24,
-    marginBottom: 8,
-  },
-
-  displayText: {
-    color: "#fff",
-    fontSize: 72,
-    fontWeight: "300",
-  },
-
-  pad: {
-    paddingBottom: 30,
-    paddingHorizontal: 12
-  },
-  row: {
-    flexDirection: "row",
-    marginBottom: 12
-  },
-  button: {
-    flex: 1,
-    aspectRatio: 1,
-    marginHorizontal: 6,
-    borderRadius: 999,
-    backgroundColor: "#333",
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  zeroButton: {
-    flex: 2.15,
-    aspectRatio: undefined,
-    height: 70,
-    alignItems: "flex-start",
-    paddingLeft: 28
-  },
-  operatorButton: {
-    backgroundColor: "#ff9f0a"
-  },
-  buttonText: {
-    color: "#fff",
-    fontSize: 28
-  },
-});
 

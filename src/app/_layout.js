@@ -1,6 +1,7 @@
 import { Tabs } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import "../global.css"
 
 export default function RootLayout() {
   const insets = useSafeAreaInsets();
