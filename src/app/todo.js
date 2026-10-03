@@ -26,7 +26,29 @@ export default function Todo() {
             const savedTodos = await AsyncStorage.getItem("todos");
 
             if (savedTodos !== null) {
-                setTodos(JSON.parse(savedTodos));
+                const todos = JSON.parse(savedTodos);
+
+                const priorityOrder = {
+                    high: 1,
+                    medium: 2,
+                    low: 3,
+                };
+
+                todos.sort((a, b) => {
+                    if (!a.dueDate) return 1;
+                    if (!b.dueDate) return -1;
+
+           
+                    const dateComparison = a.dueDate.localeCompare(b.dueDate);
+
+                    if (dateComparison !== 0) {
+                        return dateComparison;
+                    }
+
+                    return priorityOrder[a.priority] - priorityOrder[b.priority];
+                });
+
+                setTodos(todos);
             }
         } catch (error) {
             console.error("Failed to load tasks", error);
@@ -82,216 +104,208 @@ export default function Todo() {
         setTodos(todos.filter((todo) => todo.id !== id));
     };
 
-return (
-    <View className="flex-1 bg-[#F7F7F5] px-5 pt-[60px]">
-        <Text className="mb-6 text-[30px] font-bold text-[#18181B]">
-            Your Daily Tasks
-        </Text>
-
-        {showAddtask && (
-            <>
-                {/* Task input */}
-                <TextInput
-                    className="h-[52px] justify-center rounded-xl border border-[#E4E4E7] bg-white px-4"
-                    placeholder="Enter task"
-                    placeholderTextColor="#999"
-                    value={task}
-                    onChangeText={setTask}
-                />
-
-                {/* Priority */}
-                <Text className="mb-2 mt-[18px] text-sm font-semibold text-[#52525B]">
-                    Priority
-                </Text>
-
-                <View className="flex-row gap-2">
-                    <Pressable
-                        className={`h-11 flex-1 items-center justify-center rounded-[10px] border ${
-                            priority === "low"
-                                ? "border-[#10B981] bg-[#ECFDF5]"
-                                : "border-[#E4E4E7] bg-white"
-                        }`}
-                        onPress={() => setPriority("low")}
-                    >
-                        <Text
-                            className={`text-sm font-semibold ${
-                                priority === "low"
-                                    ? "text-[#18181B]"
-                                    : "text-[#52525B]"
-                            }`}
-                        >
-                            Low
-                        </Text>
-                    </Pressable>
-
-                    <Pressable
-                        className={`h-11 flex-1 items-center justify-center rounded-[10px] border ${
-                            priority === "medium"
-                                ? "border-[#F59E0B] bg-[#FFFBEB]"
-                                : "border-[#E4E4E7] bg-white"
-                        }`}
-                        onPress={() => setPriority("medium")}
-                    >
-                        <Text
-                            className={`text-sm font-semibold ${
-                                priority === "medium"
-                                    ? "text-[#18181B]"
-                                    : "text-[#52525B]"
-                            }`}
-                        >
-                            Medium
-                        </Text>
-                    </Pressable>
-
-                    <Pressable
-                        className={`h-11 flex-1 items-center justify-center rounded-[10px] border ${
-                            priority === "high"
-                                ? "border-[#EF4444] bg-[#FEF2F2]"
-                                : "border-[#E4E4E7] bg-white"
-                        }`}
-                        onPress={() => setPriority("high")}
-                    >
-                        <Text
-                            className={`text-sm font-semibold ${
-                                priority === "high"
-                                    ? "text-[#18181B]"
-                                    : "text-[#52525B]"
-                            }`}
-                        >
-                            High
-                        </Text>
-                    </Pressable>
-                </View>
-
-                {/* Due date */}
-                <Text className="mb-2 mt-[18px] text-sm font-semibold text-[#52525B]">
-                    Due Date
-                </Text>
-
-                <Pressable
-                    className="h-[52px] justify-center rounded-xl border border-[#E4E4E7] bg-white px-4"
-                    onPress={() => setShowPicker(true)}
-                >
-                    <View className="flex-row items-center justify-between">
-                        <Text
-                            className={`text-[15px] ${
-                                selectedDate
-                                    ? "text-[#18181B]"
-                                    : "text-[#999]"
-                            }`}
-                        >
-                            {selectedDate
-                                ? selectedDate.toLocaleDateString()
-                                : "Select due date"}
-                        </Text>
-
-                        <Ionicons
-                            name="calendar-outline"
-                            size={20}
-                            color="#71717A"
-                        />
-                    </View>
-                </Pressable>
-
-                {picker && (
-                    <DateTimePicker
-                        value={selectedDate || new Date()}
-                        mode="date"
-                        display="default"
-                        onChange={(event, date) => {
-                            setShowPicker(false);
-
-                            if (date) {
-                                setSelectedDate(date);
-                            }
-                        }}
-                    />
-                )}
-            </>
-        )}
-
-        {/* Add button */}
-        <Pressable
-            className="mt-[22px] h-[52px] items-center justify-center rounded-xl bg-[#18181B]"
-            onPress={addTodo}
-        >
-            {/* <Ionicons name="add" size={20} color="white" /> */}
-
-            <Text className="text-base font-semibold text-white">
-                Add Task
+    return (
+        <View className="flex-1 bg-[#F7F7F5] px-5 pt-[60px]">
+            <Text className="mb-6 text-[30px] font-bold text-[#18181B]">
+                Your Daily Tasks
             </Text>
-        </Pressable>
 
-        {/* Todo list */}
-        <View className="mt-5">
-            {todos.map((todo) => (
-                <View
-                    className="mt-3 flex-row items-center justify-between rounded-[14px] border border-[#EAEAEA] bg-white p-4 shadow-sm"
-                    key={todo.id}
-                >
-                    <View className="flex-1 pr-[10px]">
-                        <Text
-                            className={`text-base font-semibold text-[#18181B] ${
-                                todo.completed
-                                    ? "opacity-40 line-through"
-                                    : ""
-                            }`}
-                        >
-                            {todo.task}
-                        </Text>
+            {showAddtask && (
+                <>
+                    {/* Task input */}
+                    <TextInput
+                        className="h-[52px] justify-center rounded-xl border border-[#E4E4E7] bg-white px-4"
+                        placeholder="Enter task"
+                        placeholderTextColor="#999"
+                        value={task}
+                        onChangeText={setTask}
+                    />
 
-                        <View className="mt-[5px] flex-row items-center gap-1.5">
-                            <Text className="text-[13px] text-[#71717A]">
-                                {todo.priority}
-                            </Text>
-
-                            {todo.dueDate !== "" && (
-                                <>
-                                    <Text className="text-[#A1A1AA]">•</Text>
-
-                                    <Text className="text-[13px] text-[#71717A]">
-                                        Due {todo.dueDate}
-                                    </Text>
-                                </>
-                            )}
-                        </View>
-                    </View>
+                    {/* Priority */}
+                    <Text className="mb-2 mt-[18px] text-sm font-semibold text-[#52525B]">
+                        Priority
+                    </Text>
 
                     <View className="flex-row gap-2">
-                        {/* Complete */}
                         <Pressable
-                            className="h-10 w-10 items-center justify-center rounded-[10px] bg-[#18181B]"
-                            onPress={() => toggleTodo(todo.id)}
+                            className={`h-11 flex-1 items-center justify-center rounded-[10px] border ${priority === "low"
+                                ? "border-[#10B981] bg-[#ECFDF5]"
+                                : "border-[#E4E4E7] bg-white"
+                                }`}
+                            onPress={() => setPriority("low")}
                         >
-                            <Ionicons
-                                name={
-                                    todo.completed
-                                        ? "checkmark-circle"
-                                        : "checkmark-circle-outline"
-                                }
-                                size={23}
-                                color={
-                                    todo.completed ? "#16A34A" : "#52525B"
-                                }
-                            />
+                            <Text
+                                className={`text-sm font-semibold ${priority === "low"
+                                    ? "text-[#18181B]"
+                                    : "text-[#52525B]"
+                                    }`}
+                            >
+                                Low
+                            </Text>
                         </Pressable>
 
-                        {/* Delete */}
                         <Pressable
-                            className="h-10 w-10 items-center justify-center rounded-[10px] bg-[#FEF2F2]"
-                            onPress={() => deleteTodo(todo.id)}
+                            className={`h-11 flex-1 items-center justify-center rounded-[10px] border ${priority === "medium"
+                                ? "border-[#F59E0B] bg-[#FFFBEB]"
+                                : "border-[#E4E4E7] bg-white"
+                                }`}
+                            onPress={() => setPriority("medium")}
                         >
-                            <Ionicons
-                                name="trash-outline"
-                                size={20}
-                                color="#DC2626"
-                            />
+                            <Text
+                                className={`text-sm font-semibold ${priority === "medium"
+                                    ? "text-[#18181B]"
+                                    : "text-[#52525B]"
+                                    }`}
+                            >
+                                Medium
+                            </Text>
+                        </Pressable>
+
+                        <Pressable
+                            className={`h-11 flex-1 items-center justify-center rounded-[10px] border ${priority === "high"
+                                ? "border-[#EF4444] bg-[#FEF2F2]"
+                                : "border-[#E4E4E7] bg-white"
+                                }`}
+                            onPress={() => setPriority("high")}
+                        >
+                            <Text
+                                className={`text-sm font-semibold ${priority === "high"
+                                    ? "text-[#18181B]"
+                                    : "text-[#52525B]"
+                                    }`}
+                            >
+                                High
+                            </Text>
                         </Pressable>
                     </View>
-                </View>
-            ))}
+
+                    {/* Due date */}
+                    <Text className="mb-2 mt-[18px] text-sm font-semibold text-[#52525B]">
+                        Due Date
+                    </Text>
+
+                    <Pressable
+                        className="h-[52px] justify-center rounded-xl border border-[#E4E4E7] bg-white px-4"
+                        onPress={() => setShowPicker(true)}
+                    >
+                        <View className="flex-row items-center justify-between">
+                            <Text
+                                className={`text-[15px] ${selectedDate
+                                    ? "text-[#18181B]"
+                                    : "text-[#999]"
+                                    }`}
+                            >
+                                {selectedDate
+                                    ? selectedDate.toLocaleDateString()
+                                    : "Select due date"}
+                            </Text>
+
+                            <Ionicons
+                                name="calendar-outline"
+                                size={20}
+                                color="#71717A"
+                            />
+                        </View>
+                    </Pressable>
+
+                    {picker && (
+                        <DateTimePicker
+                            value={selectedDate || new Date()}
+                            mode="date"
+                            display="default"
+                            onChange={(event, date) => {
+                                setShowPicker(false);
+
+                                if (date) {
+                                    setSelectedDate(date);
+                                }
+                            }}
+                        />
+                    )}
+                </>
+            )}
+
+            {/* Add button */}
+            <Pressable
+                className="mt-[22px] h-[52px] items-center justify-center rounded-xl bg-[#18181B]"
+                onPress={addTodo}
+            >
+                {/* <Ionicons name="add" size={20} color="white" /> */}
+
+                <Text className="text-base font-semibold text-white">
+                    Add Task
+                </Text>
+            </Pressable>
+
+            {/* Todo list */}
+            <View className="mt-5">
+                {todos.map((todo) => (
+                    <View
+                        className="mt-3 flex-row items-center justify-between rounded-[14px] border border-[#EAEAEA] bg-white p-4 shadow-sm"
+                        key={todo.id}
+                    >
+                        <View className="flex-1 pr-[10px]">
+                            <Text
+                                className={`text-base font-semibold text-[#18181B] ${todo.completed
+                                    ? "opacity-40 line-through"
+                                    : ""
+                                    }`}
+                            >
+                                {todo.task}
+                            </Text>
+
+                            <View className="mt-[5px] flex-row items-center gap-1.5">
+                                <Text className="text-[13px] text-[#71717A]">
+                                    {todo.priority}
+                                </Text>
+
+                                {todo.dueDate !== "" && (
+                                    <>
+                                        <Text className="text-[#A1A1AA]">•</Text>
+
+                                        <Text className="text-[13px] text-[#71717A]">
+                                            Due {todo.dueDate}
+                                        </Text>
+                                    </>
+                                )}
+                            </View>
+                        </View>
+
+                        <View className="flex-row gap-2">
+                            {/* Complete */}
+                            <Pressable
+                                className="h-10 w-10 items-center justify-center rounded-[10px] bg-[#18181B]"
+                                onPress={() => toggleTodo(todo.id)}
+                            >
+                                <Ionicons
+                                    name={
+                                        todo.completed
+                                            ? "checkmark-circle"
+                                            : "checkmark-circle-outline"
+                                    }
+                                    size={23}
+                                    color={
+                                        todo.completed ? "#16A34A" : "#52525B"
+                                    }
+                                />
+                            </Pressable>
+
+                            {/* Delete */}
+                            <Pressable
+                                className="h-10 w-10 items-center justify-center rounded-[10px] bg-[#FEF2F2]"
+                                onPress={() => deleteTodo(todo.id)}
+                            >
+                                <Ionicons
+                                    name="trash-outline"
+                                    size={20}
+                                    color="#DC2626"
+                                />
+                            </Pressable>
+                        </View>
+                    </View>
+                ))}
+            </View>
         </View>
-    </View>
-);
+    );
 
 }
